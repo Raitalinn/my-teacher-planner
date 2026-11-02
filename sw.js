@@ -1,5 +1,5 @@
-const CACHE='my-teacher-planner-static-v23';
-const ASSETS=['./','./index.html','./style.css?v=23','./app.js?v=23','./attendance.js?v=23','./smart.js?v=23','./homework.js?v=23','./manifest.webmanifest','./icon.svg'];
+const CACHE='my-teacher-planner-static-v24';
+const ASSETS=['./','./index.html','./style.css?v=24','./app.js?v=24','./attendance.js?v=24','./smart.js?v=24','./homework.js?v=24','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('my-teacher-planner-static-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;
