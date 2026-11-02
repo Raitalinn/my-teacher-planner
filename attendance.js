@@ -34,7 +34,7 @@ async function attendanceRefresh(){
  }).join(''):'<div class="empty">ไม่พบรายการย้อนหลัง</div>');
 }
 const originalRender=render;
-render=function(){originalRender();if(page==='attendance')attendanceRefresh().catch(console.error)};
+render=function(){originalRender();if(page==='attendance'){const m=document.querySelector('main.wrap');if(m)m.innerHTML=attendancePage();attendanceRefresh().catch(console.error)}};
 document.addEventListener('change',async e=>{
  const t=e.target;if(t.id==='attRoom'){attendanceRoom=t.value;attendanceSlot='';render();return}
  if(t.id==='attDate'){attendanceDate=t.value;attendanceRefresh();return}
