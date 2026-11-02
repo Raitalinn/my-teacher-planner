@@ -1,6 +1,8 @@
 'use strict';
 // Simple per-period attendance summary. Historical student records are retained.
 let attendanceRoom='ม.4/5',attendanceDate=localDate(),attendanceSlot='',attRecords=[];
+const previousAttendanceRefresh=refresh;
+refresh=async function(){if(db)attRecords=await all('attendance_summary');await previousAttendanceRefresh()};
 const attCategories=[['leave','ลากิจ'],['sick','ลาป่วย'],['absent','ขาด']];
 function attInput(k,label,record){
  return '<div class="card panel" style="margin:8px 0"><div class="section"><strong>'+label+'</strong><span class="muted">จำนวนและชื่อ</span></div><div class="grid2"><div class="field"><label>จำนวน (คน)</label><input type="number" min="0" max="999" inputmode="numeric" name="'+k+'Count" value="'+(record?.[k+'Count']||0)+'"></div><div class="field"><label>เลขที่ / ชื่อ (ถ้ามี)</label><textarea name="'+k+'Names" rows="2" placeholder="เช่น เลขที่ 2, 7 หรือชื่อ-สกุล">'+esc(record?.[k+'Names']||'')+'</textarea></div></div></div>';
@@ -47,6 +49,6 @@ document.addEventListener('click',async e=>{
   let old=attRecords.find(x=>x.slotId===attendanceSlot&&x.date===attendanceDate),v={id:old?.id||uid(),date:attendanceDate,slotId:attendanceSlot,room:attendanceRoom,allPresent:attendanceAllPresent,updated:new Date().toISOString()};
   for(const [k] of attCategories){v[k+'Count']=attendanceAllPresent?0:Number(document.querySelector('[name="'+k+'Count"]').value)||0;v[k+'Names']=attendanceAllPresent?'':document.querySelector('[name="'+k+'Names"]').value.trim()}
   if(!attendanceAllPresent&&!attCategories.some(([k])=>v[k+'Count']>0))return toast('กรอกจำนวนอย่างน้อย 1 คน หรือเลือกมาครบ');
-  await put('attendance_summary',v);toast('บันทึกเรียบร้อย');render();
+  await put('attendance_summary',v);attRecords=await all('attendance_summary');toast('บันทึกเรียบร้อย');render();
  }
 });
