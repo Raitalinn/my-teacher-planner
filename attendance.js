@@ -41,7 +41,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('click',async e=>{
  let b=e.target.closest('button');if(!b)return;
  if(b.dataset.attopen){attendanceRoom=b.dataset.attroom;attendanceSlot=b.dataset.attopen;attendanceDate=b.dataset.attdate||localDate();page='attendance';render()}
- if(b.dataset.attedit){let r=attRecords.find(x=>x.id===b.dataset.attedit);if(r){attendanceRoom=r.room;attendanceDate=r.date;attendanceSlot=r.slotId;page='attendance';render()}}
+ if(b.dataset.attedit){let r=attRecords.find(x=>x.id===b.dataset.attedit);if(!r){toast('ไม่พบข้อมูลเช็กชื่อรายการนี้');return}attendanceRoom=r.room;attendanceDate=r.date;attendanceSlot=r.slotId;page='attendance';await attRender();window.scrollTo({top:0,behavior:'auto'});document.querySelector('#attSlot')?.focus({preventScroll:true});toast('เปิดข้อมูลวันที่ '+dateText(r.date)+' เพื่อแก้ไขแล้ว')}
  if(b.id==='allPresentBtn'){attendanceAllPresent=true;document.querySelector('#attendanceMissing').hidden=true;b.classList.add('active');document.querySelector('#hasMissingBtn').classList.remove('active')}
  if(b.id==='hasMissingBtn'){attendanceAllPresent=false;document.querySelector('#attendanceMissing').hidden=false;b.classList.add('active');document.querySelector('#allPresentBtn').classList.remove('active')}
  if(b.id==='saveAttendance'){
