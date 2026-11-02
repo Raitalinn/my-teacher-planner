@@ -1,5 +1,6 @@
 'use strict';
 // Homework assignments: local IndexedDB. Nothing is uploaded to GitHub.
+const HOMEWORK_GROUPS=[...CLASSES,'กิจกรรมชาย','กิจกรรมหญิง'];
 let homeworkSlot='',homeworkRoom='',homeworkDate='',homeworkEdit='',homeworkFilter='ทั้งหมด';
 let homeworkData=[],homeworkAlertDay='';
 const hwTomorrow=(d,days)=>{let z=new Date(d+'T12:00:00');z.setDate(z.getDate()+days);return localDate(z)};
@@ -8,7 +9,7 @@ function homeworkFormView(){
  let d=item.assigned||homeworkDate||localDate(),room=item.room||homeworkRoom||slot?.room||CLASSES[0];
  let due=item.due||hwTomorrow(d,7);
  return pageTitle(item.id?'แก้ไขการบ้าน':'สั่งการบ้าน','เลือกห้องและกำหนดส่งได้ทันที ไม่ต้องกรอกข้อมูลซ้ำ')
- +'<form id="homeworkForm" class="card panel"><div class="field"><label>ห้องเรียน</label><select name="room">'+CLASSES.map(x=>'<option '+(x===room?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'
+ +'<form id="homeworkForm" class="card panel"><div class="field"><label>ห้องเรียน</label><select name="room">'+HOMEWORK_GROUPS.map(x=>'<option '+(x===room?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'
  +'<div class="field"><label>ชื่องาน *</label><div class="pills">'+['ใบงาน','แบบฝึกหัด','งานกลุ่ม','ชิ้นงาน','แบบทดสอบ'].map(x=>'<button type="button" data-hwtitle="'+x+'">'+x+'</button>').join('')+'</div><input required maxlength="200" name="title" value="'+esc(item.title||'')+'" placeholder="แตะประเภทงานด้านบน หรือพิมพ์ชื่อเฉพาะ"></div>'
  +'<div class="field"><label>รายละเอียด (ไม่บังคับ)</label><textarea name="details" rows="2" placeholder="คำสั่งหรือหัวข้อเพิ่มเติม">'+esc(item.details||'')+'</textarea></div>'
  +'<div class="grid2"><div class="field"><label>วันที่มอบหมาย</label><input name="assigned" type="date" value="'+d+'" required></div><div class="field"><label>กำหนดส่ง *</label><input name="due" type="date" value="'+due+'" required></div></div>'
@@ -24,7 +25,7 @@ function homeworkPage(){
  return pageTitle('การบ้านและกำหนดส่ง','ติดตามการบ้านรายห้อง พร้อมประวัติย้อนหลัง')
  +'<button class="btn full" data-hwnew="1">+ สั่งการบ้าน</button>'
  +'<div class="stats"><div class="stat"><strong>'+active.length+'</strong><span>งานที่ยังเปิด</span></div><div class="stat"><strong>'+active.filter(x=>x.due===localDate()).length+'</strong><span>ส่งวันนี้</span></div><div class="stat"><strong>'+active.filter(x=>x.due<localDate()).length+'</strong><span>เลยกำหนด</span></div></div>'
- +'<div class="field"><label>เลือกห้องเรียน</label><select id="hwFilter"><option>ทั้งหมด</option>'+CLASSES.map(x=>'<option '+(x===homeworkFilter?'selected':'')+'>'+x+'</option>').join('')+'</select></div>'
+ +'<div class="field"><label>เลือกห้องเรียน</label><select id="hwFilter"><option>ทั้งหมด</option>'+HOMEWORK_GROUPS.map(x=>'<option '+(x===homeworkFilter?'selected':'')+'>'+x+'</option>').join('')+'</select></div>'
  +(subset.length?subset.map(hwCard).join(''):'<div class="empty">ยังไม่มีการบ้านในห้องที่เลือก</div>');
 }
 function homeworkDecorate(){
@@ -40,7 +41,7 @@ function homeworkDecorate(){
  let buttons=[...document.querySelectorAll('button[data-attopen]')];
  for(let b of buttons){
  if(b.parentElement.querySelector('button[data-hwslot]'))continue;
- let slot=slots.find(s=>s.id===b.dataset.attopen);if(!slot||!CLASSES.includes(slot.room))continue;
+ let slot=slots.find(s=>s.id===b.dataset.attopen);if(!slot||!HOMEWORK_GROUPS.includes(slot.room))continue;
  b.insertAdjacentHTML('afterend','<button class="btn secondary small" data-hwslot="'+esc(slot.id)+'" data-hwdate="'+esc(b.dataset.attdate||localDate())+'">+ การบ้าน</button>');
  }
  if(page==='logForm'){
