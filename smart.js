@@ -51,7 +51,7 @@ function quickLogButtons(){
 }
 
 function slotVisualStatus(slot,date){
- const now=new Date(),today=localDate(),log=sessionOf(slot,date);
+ const now=new Date(),today=localDate(),log=sessionOf(slot,date),attendance=(typeof attRecords!=='undefined'?attRecords:[]).find(x=>x.slotId===slot.id&&x.date===date);
  let state='upcoming',label='ยังไม่เริ่ม',color='#64748b';
  if(date<today){state='ended';label='ผ่านเวลาคาบแล้ว';color='#16a34a'}
  else if(date===today){
@@ -63,14 +63,14 @@ function slotVisualStatus(slot,date){
   else if(current>=a){state='teaching';label='กำลังสอน';color='#16a34a'}
  }
  if(log && log.status==='งดสอน')return {state:'cancelled',label:'งดสอนแล้ว',color:'#64748b',log};
- return {state,label,color,log};
+ return {state,label,color,log,attendance};
 }
 function statusRibbon(slot,date){
  const v=slotVisualStatus(slot,date);
  const now=new Date(),total=msTime(now,slot.end)-msTime(now,slot.start);
  const elapsed=now-msTime(now,slot.start);
  const percent=date===localDate()?Math.max(0,Math.min(100,Math.round(100*elapsed/Math.max(1,total)))):(date<localDate()?100:0);
- return '<div class="teacher-status" style="border-left:5px solid '+v.color+';padding-left:10px;margin:9px 0 2px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:'+v.color+'">● '+v.label+'</span>'+(v.log?'<span style="font-size:12px;color:#166534">✓ บันทึก: '+esc(v.log.status)+'</span>':(v.state==='ended'?'<span style="font-size:12px;color:#b45309">ยังไม่ได้เช็กชื่อ</span>':''))+'</div><div style="height:6px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:7px"><div style="width:'+percent+'%;height:100%;background:'+v.color+';transition:width .3s"></div></div></div>';
+ return '<div class="teacher-status" style="border-left:5px solid '+v.color+';padding-left:10px;margin:9px 0 2px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:'+v.color+'">● '+v.label+'</span>'+(v.attendance?'<span style="font-size:12px;color:#166534">✓ เช็กชื่อแล้ว'+(v.attendance.allPresent?' · มาครบ':' · มีผู้ไม่มา')+'</span>':(v.state==='ended'?'<span style="font-size:12px;color:#b45309">ยังไม่ได้เช็กชื่อ</span>':''))+'</div><div style="height:6px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:7px"><div style="width:'+percent+'%;height:100%;background:'+v.color+';transition:width .3s"></div></div></div>';
 }
 function decorateCards(){
  if(!['home','schedule'].includes(page))return;
