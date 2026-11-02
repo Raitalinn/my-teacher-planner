@@ -9,7 +9,7 @@ function homeworkFormView(){
  let d=item.assigned||homeworkDate||localDate(),room=item.room||homeworkRoom||slot?.room||CLASSES[0];
  let due=item.due||hwTomorrow(d,7);
  return pageTitle(item.id?'แก้ไขการบ้าน':'สั่งการบ้าน','เลือกห้องและกำหนดส่งได้ทันที ไม่ต้องกรอกข้อมูลซ้ำ')
- +'<form id="homeworkForm" class="card panel"><div class="field"><label>ห้องเรียน</label><select name="room">'+HOMEWORK_GROUPS.map(x=>'<option '+(x===room?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'
+ +'<form id="homeworkForm" class="card panel"><div class="field"><label>ห้องเรียน</label><select name="room">'+HOMEWORK_GROUPS.map(x=>'<option value="'+esc(x)+'" '+(x===room?'selected':'')+'>'+esc(displayGroup(x))+'</option>').join('')+'</select></div>'
  +'<div class="field"><label>ชื่องาน *</label><div class="pills">'+['ใบงาน','แบบฝึกหัด','งานกลุ่ม','ชิ้นงาน','แบบทดสอบ'].map(x=>'<button type="button" data-hwtitle="'+x+'">'+x+'</button>').join('')+'</div><input required maxlength="200" name="title" value="'+esc(item.title||'')+'" placeholder="แตะประเภทงานด้านบน หรือพิมพ์ชื่อเฉพาะ"></div>'
  +'<div class="field"><label>รายละเอียด (ไม่บังคับ)</label><textarea name="details" rows="2" placeholder="คำสั่งหรือหัวข้อเพิ่มเติม">'+esc(item.details||'')+'</textarea></div>'
  +'<div class="grid2"><div class="field"><label>วันที่มอบหมาย</label><input name="assigned" type="date" value="'+d+'" required></div><div class="field"><label>กำหนดส่ง *</label><input name="due" type="date" value="'+due+'" required></div></div>'
@@ -18,14 +18,14 @@ function homeworkFormView(){
  +'<div class="actions"><button class="btn" type="submit">บันทึกการบ้าน</button><button class="btn secondary" type="button" data-nav="homework">ยกเลิก</button></div></form>';
 }
 function hwDueTag(item){let t=localDate(),days=Math.round((new Date(item.due+'T12:00:00')-new Date(t+'T12:00:00'))/86400000);return item.status==='ปิดงาน'?'ปิดงานแล้ว':days<0?'เลยกำหนด '+(-days)+' วัน':days===0?'ส่งวันนี้':days===1?'ส่งพรุ่งนี้':'เหลือ '+days+' วัน'}
-function hwCard(a){return '<div class="card panel"><div class="section" style="margin:0 0 5px"><strong>'+esc(a.room)+' · '+esc(a.title)+'</strong><span class="tag">'+esc(hwDueTag(a))+'</span></div><div class="muted">กำหนดส่ง '+dateText(a.due)+' · '+esc(a.status)+'</div>'+(a.details?'<div class="muted" style="margin-top:7px">'+esc(a.details)+'</div>':'')+'<div class="actions" style="margin-top:10px"><button class="btn secondary small" data-hwedit="'+esc(a.id)+'">แก้ไข</button>'+(a.status!=='ปิดงาน'?'<button class="btn secondary small" data-hwclose="'+esc(a.id)+'">✓ ปิดงาน</button>':'<button class="btn secondary small" data-hwreopen="'+esc(a.id)+'">เปิดงานอีกครั้ง</button>')+'<button class="btn danger small" data-hwdelete="'+esc(a.id)+'">ลบ</button></div></div>'}
+function hwCard(a){return '<div class="card panel"><div class="section" style="margin:0 0 5px"><strong>'+esc(displayGroup(a.room))+' · '+esc(a.title)+'</strong><span class="tag">'+esc(hwDueTag(a))+'</span></div><div class="muted">กำหนดส่ง '+dateText(a.due)+' · '+esc(a.status)+'</div>'+(a.details?'<div class="muted" style="margin-top:7px">'+esc(a.details)+'</div>':'')+'<div class="actions" style="margin-top:10px"><button class="btn secondary small" data-hwedit="'+esc(a.id)+'">แก้ไข</button>'+(a.status!=='ปิดงาน'?'<button class="btn secondary small" data-hwclose="'+esc(a.id)+'">✓ ปิดงาน</button>':'<button class="btn secondary small" data-hwreopen="'+esc(a.id)+'">เปิดงานอีกครั้ง</button>')+'<button class="btn danger small" data-hwdelete="'+esc(a.id)+'">ลบ</button></div></div>'}
 function homeworkPage(){
  let subset=homeworkData.filter(a=>homeworkFilter==='ทั้งหมด'||a.room===homeworkFilter).sort((a,b)=>(a.status==='ปิดงาน')-(b.status==='ปิดงาน')||a.due.localeCompare(b.due));
  let active=homeworkData.filter(a=>a.status!=='ปิดงาน');
  return pageTitle('การบ้านและกำหนดส่ง','ติดตามการบ้านรายห้อง พร้อมประวัติย้อนหลัง')
  +'<button class="btn full" data-hwnew="1">+ สั่งการบ้าน</button>'
  +'<div class="stats"><div class="stat"><strong>'+active.length+'</strong><span>งานที่ยังเปิด</span></div><div class="stat"><strong>'+active.filter(x=>x.due===localDate()).length+'</strong><span>ส่งวันนี้</span></div><div class="stat"><strong>'+active.filter(x=>x.due<localDate()).length+'</strong><span>เลยกำหนด</span></div></div>'
- +'<div class="field"><label>เลือกห้องเรียน</label><select id="hwFilter"><option>ทั้งหมด</option>'+HOMEWORK_GROUPS.map(x=>'<option '+(x===homeworkFilter?'selected':'')+'>'+x+'</option>').join('')+'</select></div>'
+ +'<div class="field"><label>เลือกห้องเรียน</label><select id="hwFilter"><option>ทั้งหมด</option>'+HOMEWORK_GROUPS.map(x=>'<option value="'+esc(x)+'" '+(x===homeworkFilter?'selected':'')+'>'+esc(displayGroup(x))+'</option>').join('')+'</select></div>'
  +(subset.length?subset.map(hwCard).join(''):'<div class="empty">ยังไม่มีการบ้านในห้องที่เลือก</div>');
 }
 function homeworkDecorate(){
@@ -35,7 +35,7 @@ function homeworkDecorate(){
  if(page==='home'){
  let active=homeworkData.filter(x=>x.status!=='ปิดงาน').sort((a,b)=>a.due.localeCompare(b.due));
  let main=document.querySelector('main.wrap');
- if(main)main.insertAdjacentHTML('beforeend','<div class="section"><h2>การบ้านใกล้กำหนด</h2><button class="btn ghost" data-nav="homework">ดูทั้งหมด →</button></div>'+(active.length?active.slice(0,3).map(x=>'<div class="card rowcard"><div class="grow"><div class="strong">'+esc(x.room)+' · '+esc(x.title)+'</div><div class="muted">'+dateText(x.due)+' · '+esc(hwDueTag(x))+'</div></div><button class="btn secondary small" data-nav="homework">เปิด</button></div>').join(''):'<div class="empty">ยังไม่มีการบ้านที่รอส่ง</div>'));
+ if(main)main.insertAdjacentHTML('beforeend','<div class="section"><h2>การบ้านใกล้กำหนด</h2><button class="btn ghost" data-nav="homework">ดูทั้งหมด →</button></div>'+(active.length?active.slice(0,3).map(x=>'<div class="card rowcard"><div class="grow"><div class="strong">'+esc(displayGroup(x.room))+' · '+esc(x.title)+'</div><div class="muted">'+dateText(x.due)+' · '+esc(hwDueTag(x))+'</div></div><button class="btn secondary small" data-nav="homework">เปิด</button></div>').join(''):'<div class="empty">ยังไม่มีการบ้านที่รอส่ง</div>'));
  }
  if(['home','schedule','logForm'].includes(page)){
  let buttons=[...document.querySelectorAll('button[data-attopen]')];
