@@ -49,6 +49,42 @@ function quickLogButtons(){
  let bar=document.createElement('div');bar.className='field';bar.id='quickStatus';bar.innerHTML='<label>เลือกสถานะอย่างรวดเร็ว</label><div class="pills">'+['สอนครบ','สอนไม่ครบ','งดสอน','สอนชดเชย'].map(x=>'<button type="button" data-quickstatus="'+x+'" class="'+(status.value===x?'active':'')+'">'+x+'</button>').join('')+'</div>';
  status.closest('.field')?.after(bar);
 }
+
+function slotVisualStatus(slot,date){
+ const now=new Date(),today=localDate(),log=sessionOf(slot,date);
+ let state='upcoming',label='ยังไม่เริ่ม',color='#64748b';
+ if(date<today){state='ended';label='หมดคาบแล้ว';color='#dc2626'}
+ else if(date===today){
+  const current=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+  const tm=t=>Number(t.slice(0,2))*60+Number(t.slice(3,5));
+  const a=tm(slot.start),b=tm(slot.end);
+  if(current>=b){state='ended';label='หมดคาบแล้ว';color='#dc2626'}
+  else if(current>=a&&b-current<=5){state='ending';label='ใกล้หมดคาบ';color='#ea580c'}
+  else if(current>=a){state='teaching';label='กำลังสอน';color='#16a34a'}
+ }
+ if(log && log.status==='งดสอน')return {state:'cancelled',label:'งดสอนแล้ว',color:'#64748b',log};
+ return {state,label,color,log};
+}
+function statusRibbon(slot,date){
+ const v=slotVisualStatus(slot,date);
+ const now=new Date(),total=msTime(now,slot.end)-msTime(now,slot.start);
+ const elapsed=now-msTime(now,slot.start);
+ const percent=date===localDate()?Math.max(0,Math.min(100,Math.round(100*elapsed/Math.max(1,total)))):(date<localDate()?100:0);
+ return '<div class="teacher-status" style="border-left:5px solid '+v.color+';padding-left:10px;margin:9px 0 2px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:'+v.color+'">● '+v.label+'</span>'+(v.log?'<span style="font-size:12px;color:#166534">✓ บันทึก: '+esc(v.log.status)+'</span>':(v.state==='ended'?'<span style="font-size:12px;color:#b45309">ยังไม่บันทึกการสอน</span>':''))+'</div><div style="height:6px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:7px"><div style="width:'+percent+'%;height:100%;background:'+v.color+';transition:width .3s"></div></div></div>';
+}
+function decorateCards(){
+ if(!['home','schedule'].includes(page))return;
+ const cards=[...document.querySelectorAll('main.wrap .rowcard')];
+ const date=page==='schedule'?(selectedScheduleDate||dayDate(dayFilter)):localDate();
+ const ordered=slots.filter(s=>s.day===(page==='schedule'?dayFilter:new Date().getDay())).sort((a,b)=>a.start.localeCompare(b.start));
+ cards.forEach((card,index)=>{
+   const slot=ordered[index];if(!slot||card.querySelector('.teacher-status'))return;
+   const v=slotVisualStatus(slot,date);
+   card.style.borderLeft='5px solid '+v.color;
+   const grow=card.querySelector('.grow');if(grow)grow.insertAdjacentHTML('beforeend',statusRibbon(slot,date));
+ });
+}
+
 const smartBaseRender=render;
 render=function(){
  smartBaseRender();
@@ -58,6 +94,7 @@ render=function(){
  }
  if(page==='more'){const stack=document.querySelector('main.wrap .stack');if(stack)stack.insertAdjacentHTML('beforebegin',reminderPreferences()+'<div class="card panel"><h2>ปฏิทินมือถือ</h2><div class="muted">ส่งออกตารางสอนแบบซ้ำทุกสัปดาห์ 20 สัปดาห์ และตั้งเตือนก่อนคาบได้ 5 นาทีผ่านแอปปฏิทิน</div><button class="btn full" data-exportics="1">ดาวน์โหลดตารางเรียน (.ics)</button></div>')}
  quickLogButtons();
+ decorateCards();
 };
 document.addEventListener('click',async e=>{
  let b=e.target.closest('button');if(!b)return;
@@ -81,6 +118,6 @@ function exportIcs(){
  download('my-teacher-timetable.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//My Teacher Planner//TH',zone,...events,'END:VCALENDAR'].join('\r\n'),'text/calendar;charset=utf-8');
  toast('ดาวน์โหลดไฟล์ปฏิทินแล้ว');
 }
-setInterval(()=>{if(document.visibilityState==='visible'&&db){if(page==='home')render();checkReminder().catch(console.error)}},30000);
+setInterval(()=>{if(document.visibilityState==='visible'&&db){if(page==='home'||page==='schedule')render();checkReminder().catch(console.error)}},30000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&db){loadReminder().then(()=>{if(page==='home')render();checkReminder()})}});
 setTimeout(()=>{if(db)loadReminder().then(()=>checkReminder())},1000);
