@@ -37,11 +37,11 @@ function homeworkDecorate(){
  if(main)main.insertAdjacentHTML('beforeend','<div class="section"><h2>การบ้านใกล้กำหนด</h2><button class="btn ghost" data-nav="homework">ดูทั้งหมด →</button></div>'+(active.length?active.slice(0,3).map(x=>'<div class="card rowcard"><div class="grow"><div class="strong">'+esc(x.room)+' · '+esc(x.title)+'</div><div class="muted">'+dateText(x.due)+' · '+esc(hwDueTag(x))+'</div></div><button class="btn secondary small" data-nav="homework">เปิด</button></div>').join(''):'<div class="empty">ยังไม่มีการบ้านที่รอส่ง</div>'));
  }
  if(['home','schedule','logForm'].includes(page)){
- let buttons=[...document.querySelectorAll('button[data-editlog]')];
+ let buttons=[...document.querySelectorAll('button[data-attopen]')];
  for(let b of buttons){
  if(b.parentElement.querySelector('button[data-hwslot]'))continue;
- let slot=slots.find(s=>s.id===b.dataset.editlog);if(!slot||!CLASSES.includes(slot.room))continue;
- b.insertAdjacentHTML('afterend','<button class="btn secondary small" data-hwslot="'+esc(slot.id)+'" data-hwdate="'+esc(b.dataset.date||localDate())+'">+ การบ้าน</button>');
+ let slot=slots.find(s=>s.id===b.dataset.attopen);if(!slot||!CLASSES.includes(slot.room))continue;
+ b.insertAdjacentHTML('afterend','<button class="btn secondary small" data-hwslot="'+esc(slot.id)+'" data-hwdate="'+esc(b.dataset.attdate||localDate())+'">+ การบ้าน</button>');
  }
  if(page==='logForm'){
  let form=document.querySelector('#logForm');if(form&&!form.querySelector('[data-hwfromlog]'))form.insertAdjacentHTML('beforeend','<button type="button" class="btn secondary full" data-hwfromlog="1">+ สั่งการบ้านของคาบนี้</button>');
