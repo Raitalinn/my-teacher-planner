@@ -81,6 +81,14 @@ function decorateCards(){
    const slot=ordered[index];if(!slot||card.querySelector('.teacher-status'))return;
    const v=slotVisualStatus(slot,date);
    card.style.borderLeft='5px solid '+v.color;
+   const timeBox=card.querySelector('.time');
+   if(timeBox){
+     timeBox.style.cssText='background:'+v.color+';color:#fff;border-radius:12px;padding:10px 8px;min-width:77px;text-align:center;font-weight:800';
+     const sm=timeBox.querySelector('small');if(sm){sm.style.color='#fff';sm.style.opacity='.95'}
+     const previous=timeBox.querySelector('.period-caption');if(previous)previous.remove();
+     const label=document.createElement('div');label.className='period-caption';label.style.cssText='font-size:11px;font-weight:700;line-height:1.3;margin-top:6px;color:white';label.textContent='คาบ '+slot.period+' · '+(v.state==='teaching'?'กำลังสอน':v.state==='ending'?'ใกล้หมด':v.state==='ended'?'หมดเวลา':v.state==='cancelled'?'งดสอน':'รอเริ่ม');timeBox.appendChild(label);
+   }
+
    const grow=card.querySelector('.grow');if(grow)grow.insertAdjacentHTML('beforeend',statusRibbon(slot,date));
  });
 }
